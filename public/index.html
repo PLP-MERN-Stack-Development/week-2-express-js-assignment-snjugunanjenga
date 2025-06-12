@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product API Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .product-list {
+            margin-top: 20px;
+        }
+        .product-item {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+        .error {
+            color: red;
+            padding: 10px;
+            background-color: #ffeeee;
+            border-radius: 4px;
+        }
+        .success {
+            color: green;
+            padding: 10px;
+            background-color: #eeffee;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Product API Test</h1>
+    <div id="status" class="success" style="display: none;"></div>
+    <div id="error" class="error" style="display: none;"></div>
+    <div id="products" class="product-list"></div>
+
+    <script>
+        // API configuration
+        const API_URL = 'http://localhost:3000/api/products';
+
+        // Function to display status messages
+        function showStatus(message, isError = false) {
+            const statusDiv = document.getElementById('status');
+            const errorDiv = document.getElementById('error');
+            
+            if (isError) {
+                errorDiv.textContent = message;
+                errorDiv.style.display = 'block';
+                statusDiv.style.display = 'none';
+            } else {
+                statusDiv.textContent = message;
+                statusDiv.style.display = 'block';
+                errorDiv.style.display = 'none';
+            }
+        }
+
+        // Function to fetch products
+        async function fetchProducts() {
+            try {
+                // First, get the API key from the backend
+                const keyResponse = await fetch('http://localhost:3000/test-api-key');
+                if (!keyResponse.ok) {
+                    throw new Error('Failed to get API key configuration');
+                }
+                const keyData = await keyResponse.json();
+                showStatus('API key is properly configured');
+
+                // Now fetch the products
+                const response = await fetch(API_URL, {
+                    headers: {
+                        'x-api-key': keyData.apiKeyPrefix
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const products = await response.json();
+                displayProducts(products);
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, true);
+            }
+        }
+
+        // Function to display products
+        function displayProducts(products) {
+            const productsDiv = document.getElementById('products');
+            productsDiv.innerHTML = '';
+
+            if (products.length === 0) {
+                productsDiv.innerHTML = '<p>No products found.</p>';
+                return;
+            }
+
+            products.forEach(product => {
+                const productDiv = document.createElement('div');
+                productDiv.className = 'product-item';
+                productDiv.innerHTML = `
+                    <h3>${product.name}</h3>
+                    <p>Price: $${product.price}</p>
+                    <p>Category: ${product.category}</p>
+                `;
+                productsDiv.appendChild(productDiv);
+            });
+        }
+
+        // Load products when the page loads
+        fetchProducts();
+    </script>
+</body>
+</html> 
