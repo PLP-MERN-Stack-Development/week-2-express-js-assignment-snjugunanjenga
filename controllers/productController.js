@@ -1,14 +1,7 @@
 // controllers/productController.js
 
-const { v4: uuidv4 } = require('uuid');
+const Product = require('../models/Product');
 const ApiError = require('../utils/apiError');
-
-/**
- * In-memory “database” for products.
- * (In a real MERN app, you would use MongoDB + Mongoose for persistence.)
- * For this assignment, we store products in an array.
- */
-let products = [];
 
 /**
  * @desc   List all products with optional filtering, pagination, and search
@@ -21,41 +14,39 @@ let products = [];
  *   - page (number, default=1): page number for pagination
  *   - limit (number, default=10): number of items per page
  */
-const getAllProducts = (req, res, next) => {
+const getAllProducts = async (req, res, next) => {
   try {
-    let result = [...products];
+    const query = {};
 
-    // 1) Filtering by category
+    // Filtering by category
     if (req.query.category) {
-      result = result.filter(prod =>
-        prod.category.toLowerCase() === req.query.category.toLowerCase()
-      );
+      query.category = req.query.category;
     }
 
-    // 2) Search by name substring
+    // Search by name substring
     if (req.query.search) {
-      const searchTerm = req.query.search.toLowerCase();
-      result = result.filter(prod =>
-        prod.name.toLowerCase().includes(searchTerm)
-      );
+      query.name = { $regex: req.query.search, $options: 'i' };
     }
 
-    // 3) Pagination
+    // Pagination
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 10;
-    const startIndex = (page - 1) * limit;
-    const endIndex = page * limit;
-    const totalItems = result.length;
+    const skip = (page - 1) * limit;
+
+    const totalItems = await Product.countDocuments(query);
     const totalPages = Math.ceil(totalItems / limit);
 
-    const paginatedResults = result.slice(startIndex, endIndex);
+    const products = await Product.find(query)
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
 
     res.json({
       status: 'success',
       page,
       totalPages,
       totalItems,
-      data: paginatedResults
+      data: products
     });
   } catch (err) {
     next(err);
@@ -67,12 +58,11 @@ const getAllProducts = (req, res, next) => {
  * @route  GET /api/products/:id
  * @access Authenticated
  */
-const getProductById = (req, res, next) => {
+const getProductById = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const product = products.find(prod => prod.id === id);
+    const product = await Product.findById(req.params.id);
     if (!product) {
-      return next(new ApiError(404, `Product with id "${id}" not found`));
+      return next(new ApiError(404, `Product with id "${req.params.id}" not found`));
     }
     res.json({ status: 'success', data: product });
   } catch (err) {
@@ -85,25 +75,12 @@ const getProductById = (req, res, next) => {
  * @route  POST /api/products
  * @access Authenticated
  */
-const createProduct = (req, res, next) => {
+const createProduct = async (req, res, next) => {
   try {
-    const { name, description, price, category, inStock } = req.body;
-
-    // id is auto-generated via uuid
-    const newProduct = {
-      id: uuidv4(),
-      name,
-      description,
-      price,
-      category,
-      inStock
-    };
-
-    products.push(newProduct);
-
+    const product = await Product.create(req.body);
     res.status(201).json({
       status: 'success',
-      data: newProduct
+      data: product
     });
   } catch (err) {
     next(err);
@@ -115,33 +92,21 @@ const createProduct = (req, res, next) => {
  * @route  PUT /api/products/:id
  * @access Authenticated
  */
-const updateProduct = (req, res, next) => {
+const updateProduct = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const index = products.findIndex(prod => prod.id === id);
+    const product = await Product.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true }
+    );
 
-    if (index === -1) {
-      return next(new ApiError(404, `Product with id "${id}" not found`));
+    if (!product) {
+      return next(new ApiError(404, `Product with id "${req.params.id}" not found`));
     }
-
-    // Only update the provided fields
-    const { name, description, price, category, inStock } = req.body;
-    const existing = products[index];
-
-    const updated = {
-      ...existing,
-      name,
-      description,
-      price,
-      category,
-      inStock
-    };
-
-    products[index] = updated;
 
     res.json({
       status: 'success',
-      data: updated
+      data: product
     });
   } catch (err) {
     next(err);
@@ -153,17 +118,13 @@ const updateProduct = (req, res, next) => {
  * @route  DELETE /api/products/:id
  * @access Authenticated
  */
-const deleteProduct = (req, res, next) => {
+const deleteProduct = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const index = products.findIndex(prod => prod.id === id);
-
-    if (index === -1) {
-      return next(new ApiError(404, `Product with id "${id}" not found`));
+    const product = await Product.findByIdAndDelete(req.params.id);
+    
+    if (!product) {
+      return next(new ApiError(404, `Product with id "${req.params.id}" not found`));
     }
-
-    // Remove from array
-    products.splice(index, 1);
 
     res.status(204).json({ status: 'success', data: null });
   } catch (err) {
@@ -176,14 +137,17 @@ const deleteProduct = (req, res, next) => {
  * @route  GET /api/products/stats
  * @access Authenticated
  */
-const getProductStats = (req, res, next) => {
+const getProductStats = async (req, res, next) => {
   try {
-    // Count products by category
-    const stats = products.reduce((acc, prod) => {
-      const cat = prod.category;
-      acc[cat] = (acc[cat] || 0) + 1;
-      return acc;
-    }, {});
+    const stats = await Product.aggregate([
+      {
+        $group: {
+          _id: '$category',
+          count: { $sum: 1 },
+          averagePrice: { $avg: '$price' }
+        }
+      }
+    ]);
 
     res.json({
       status: 'success',

@@ -3,28 +3,32 @@
 require('dotenv').config();                     // 1) Load .env variables
 const express = require('express');
 const bodyParser = require('body-parser');
+const connectDB = require('./config/db');       // 2) Import database connection
 
-const logger = require('./middleware/loggerMiddleware');            // 2) Custom logger middleware
-const { notFoundHandler, globalErrorHandler } = require('./middleware/errorMiddleware');  // 3) 404 & global‐error middleware
-const productRoutes = require('./routes/productRoutes');            // 4) Routes for /api/products
+const logger = require('./middleware/loggerMiddleware');            // 3) Custom logger middleware
+const { notFoundHandler, globalErrorHandler } = require('./middleware/errorMiddleware');  // 4) 404 & global‐error middleware
+const productRoutes = require('./routes/productRoutes');            // 5) Routes for /api/products
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// 5) Parse JSON bodies
+// 6) Connect to MongoDB
+connectDB();
+
+// 7) Parse JSON bodies
 app.use(bodyParser.json());
 
-// 6) Serve static files from the public directory
+// 8) Serve static files from the public directory
 app.use(express.static('public'));
 
-// 7) Log every request (method, URL, timestamp)
+// 9) Log every request (method, URL, timestamp)
 app.use(logger);
 
-// 8) Mount all product‐related routes at /api/products
+// 10) Mount all product‐related routes at /api/products
 //    (Inside productRoutes, authentication & validation are already applied.)
 app.use('/api/products', productRoutes);
 
-// 9) Simple root route
+// 11) Simple root route
 app.get('/', (req, res) => {
   res.send('Welcome to the Product API! Go to /api/products to see all products.');
 });
@@ -43,16 +47,16 @@ app.get('/test-api-key', (req, res) => {
   }
 });
 
-// 10) 404 handler for any unmatched route
+// 12) 404 handler for any unmatched route
 app.use(notFoundHandler);
 
-// 11) Global error handler
+// 13) Global error handler
 app.use(globalErrorHandler);
 
-// 12) Start server
+// 14) Start server
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
 
-// 13) Export for testing or external usage
+// 15) Export for testing or external usage
 module.exports = app;

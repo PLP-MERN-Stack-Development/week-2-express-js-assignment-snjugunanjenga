@@ -3,115 +3,606 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Product API Test</title>
+    <title>Product Management System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #2c3e50;
+            --success-color: #2ecc71;
+            --danger-color: #e74c3c;
+            --background-color: #f5f6fa;
+            --card-background: #ffffff;
+            --text-color: #2c3e50;
+            --border-radius: 8px;
+            --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
         }
-        .product-list {
-            margin-top: 20px;
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background-color: var(--card-background);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
         }
-        .product-item {
-            border: 1px solid #ddd;
-            padding: 10px;
+
+        .header h1 {
+            color: var(--primary-color);
             margin-bottom: 10px;
-            border-radius: 4px;
         }
-        .error {
-            color: red;
-            padding: 10px;
-            background-color: #ffeeee;
-            border-radius: 4px;
+
+        .search-section {
+            background-color: var(--card-background);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            margin-bottom: 30px;
         }
-        .success {
-            color: green;
-            padding: 10px;
-            background-color: #eeffee;
-            border-radius: 4px;
+
+        .search-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 20px;
+            padding-right: 50px;
+            border: 2px solid #ddd;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #357abd;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #1a252f;
+            transform: translateY(-2px);
+        }
+
+        .filter-section {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            background-color: white;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .product-card {
+            background-color: var(--card-background);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--box-shadow);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .product-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+
+        .product-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .product-price {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--secondary-color);
+        }
+
+        .product-category {
+            display: inline-block;
+            padding: 6px 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 20px;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .product-description {
+            color: #666;
+            margin-bottom: 20px;
+            flex-grow: 1;
+        }
+
+        .product-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: auto;
+        }
+
+        .btn-edit {
+            background-color: var(--primary-color);
+            color: white;
+            flex: 1;
+        }
+
+        .btn-delete {
+            background-color: var(--danger-color);
+            color: white;
+            flex: 1;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+
+        .status-in-stock {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .status-out-of-stock {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: var(--border-radius);
+            display: none;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .no-products {
+            text-align: center;
+            padding: 40px;
+            background-color: var(--card-background);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+
+        .no-products i {
+            font-size: 48px;
+            color: #ddd;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .search-controls {
+                flex-direction: column;
+            }
+            
+            .search-box {
+                width: 100%;
+            }
+            
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-section {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>Product API Test</h1>
-    <div id="status" class="success" style="display: none;"></div>
-    <div id="error" class="error" style="display: none;"></div>
-    <div id="products" class="product-list"></div>
+    <div class="container">
+        <div class="header">
+            <h1>Product Management System</h1>
+            <p>Manage your products efficiently</p>
+        </div>
+
+        <div id="alert" class="alert"></div>
+
+        <div class="search-section">
+            <div class="search-controls">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Search products by name, description, or category...">
+                    <i class="fas fa-search search-icon"></i>
+                </div>
+                <button class="btn btn-primary" onclick="handleSearch()">
+                    <i class="fas fa-search"></i> Search
+                </button>
+                <button class="btn btn-secondary" onclick="showAllProducts()">
+                    <i class="fas fa-list"></i> Show All
+                </button>
+                <button class="btn btn-primary" onclick="openAddModal()">
+                    <i class="fas fa-plus"></i> Add New Product
+                </button>
+            </div>
+
+            <div class="filter-section">
+                <div class="filter-group">
+                    <select id="categoryFilter" onchange="handleFilter()">
+                        <option value="">All Categories</option>
+                        <option value="electronics">Electronics</option>
+                        <option value="sports">Sports</option>
+                        <option value="home">Home</option>
+                        <option value="furniture">Furniture</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <select id="stockFilter" onchange="handleFilter()">
+                        <option value="">All Stock Status</option>
+                        <option value="true">In Stock</option>
+                        <option value="false">Out of Stock</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div id="products" class="products-grid"></div>
+    </div>
+
+    <!-- Add/Edit Product Modal -->
+    <div id="productModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Add New Product</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <form id="productForm">
+                <input type="hidden" id="productId">
+                <div class="form-group">
+                    <label for="name">Product Name</label>
+                    <input type="text" id="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="price">Price</label>
+                    <input type="number" id="price" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="category">Category</label>
+                    <select id="category" required>
+                        <option value="electronics">Electronics</option>
+                        <option value="sports">Sports</option>
+                        <option value="home">Home</option>
+                        <option value="furniture">Furniture</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="inStock">Stock Status</label>
+                    <select id="inStock" required>
+                        <option value="true">In Stock</option>
+                        <option value="false">Out of Stock</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Save Product</button>
+            </form>
+        </div>
+    </div>
 
     <script>
         // API configuration
         const API_URL = 'http://localhost:3000/api/products';
+        let currentProducts = [];
+        let filteredProducts = [];
 
-        // Function to display status messages
-        function showStatus(message, isError = false) {
-            const statusDiv = document.getElementById('status');
-            const errorDiv = document.getElementById('error');
-            
-            if (isError) {
-                errorDiv.textContent = message;
-                errorDiv.style.display = 'block';
-                statusDiv.style.display = 'none';
-            } else {
-                statusDiv.textContent = message;
-                statusDiv.style.display = 'block';
-                errorDiv.style.display = 'none';
+        // DOM Elements
+        const productsGrid = document.getElementById('products');
+        const searchInput = document.getElementById('searchInput');
+        const categoryFilter = document.getElementById('categoryFilter');
+        const stockFilter = document.getElementById('stockFilter');
+        const productModal = document.getElementById('productModal');
+        const productForm = document.getElementById('productForm');
+        const modalTitle = document.getElementById('modalTitle');
+        const alertDiv = document.getElementById('alert');
+
+        // Event Listeners
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleSearch();
             }
+        });
+        productForm.addEventListener('submit', handleFormSubmit);
+
+        // Functions
+        function showAlert(message, type = 'success') {
+            alertDiv.textContent = message;
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.style.display = 'block';
+            setTimeout(() => {
+                alertDiv.style.display = 'none';
+            }, 3000);
         }
 
-        // Function to fetch products
         async function fetchProducts() {
             try {
-                // First, get the API key from the backend
-                const keyResponse = await fetch('http://localhost:3000/test-api-key');
-                if (!keyResponse.ok) {
-                    throw new Error('Failed to get API key configuration');
-                }
-                const keyData = await keyResponse.json();
-                showStatus('API key is properly configured');
-
-                // Now fetch the products
                 const response = await fetch(API_URL, {
                     headers: {
-                        'x-api-key': keyData.apiKeyPrefix
+                        'x-api-key': localStorage.getItem('apiKey') || ''
                     }
                 });
 
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    throw new Error('Failed to fetch products');
                 }
 
-                const products = await response.json();
-                displayProducts(products);
+                const data = await response.json();
+                currentProducts = data.data;
+                filteredProducts = [...currentProducts];
+                displayProducts(filteredProducts);
             } catch (error) {
-                showStatus(`Error: ${error.message}`, true);
+                showAlert(error.message, 'error');
             }
         }
 
-        // Function to display products
         function displayProducts(products) {
-            const productsDiv = document.getElementById('products');
-            productsDiv.innerHTML = '';
+            productsGrid.innerHTML = '';
 
             if (products.length === 0) {
-                productsDiv.innerHTML = '<p>No products found.</p>';
+                productsGrid.innerHTML = `
+                    <div class="no-products">
+                        <i class="fas fa-box-open"></i>
+                        <h3>No Products Found</h3>
+                        <p>Try adjusting your search or filters</p>
+                    </div>
+                `;
                 return;
             }
 
             products.forEach(product => {
-                const productDiv = document.createElement('div');
-                productDiv.className = 'product-item';
-                productDiv.innerHTML = `
-                    <h3>${product.name}</h3>
-                    <p>Price: $${product.price}</p>
-                    <p>Category: ${product.category}</p>
+                const productCard = document.createElement('div');
+                productCard.className = 'product-card';
+                productCard.innerHTML = `
+                    <div class="product-header">
+                        <div>
+                            <h3 class="product-title">${product.name}</h3>
+                            <span class="product-category">${product.category}</span>
+                        </div>
+                        <span class="product-price">$${product.price.toFixed(2)}</span>
+                    </div>
+                    <span class="status-badge ${product.inStock ? 'status-in-stock' : 'status-out-of-stock'}">
+                        ${product.inStock ? 'In Stock' : 'Out of Stock'}
+                    </span>
+                    <p class="product-description">${product.description || 'No description available'}</p>
+                    <div class="product-actions">
+                        <button class="btn btn-edit" onclick="openEditModal('${product._id}')">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button class="btn btn-delete" onclick="deleteProduct('${product._id}')">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
                 `;
-                productsDiv.appendChild(productDiv);
+                productsGrid.appendChild(productCard);
             });
         }
 
-        // Load products when the page loads
+        function handleSearch() {
+            const searchTerm = searchInput.value.toLowerCase();
+            filteredProducts = currentProducts.filter(product =>
+                product.name.toLowerCase().includes(searchTerm) ||
+                product.description.toLowerCase().includes(searchTerm) ||
+                product.category.toLowerCase().includes(searchTerm)
+            );
+            displayProducts(filteredProducts);
+        }
+
+        function handleFilter() {
+            const categoryValue = categoryFilter.value;
+            const stockValue = stockFilter.value;
+            
+            filteredProducts = currentProducts.filter(product => {
+                const categoryMatch = !categoryValue || product.category === categoryValue;
+                const stockMatch = !stockValue || product.inStock.toString() === stockValue;
+                return categoryMatch && stockMatch;
+            });
+            
+            displayProducts(filteredProducts);
+        }
+
+        function showAllProducts() {
+            searchInput.value = '';
+            categoryFilter.value = '';
+            stockFilter.value = '';
+            filteredProducts = [...currentProducts];
+            displayProducts(filteredProducts);
+        }
+
+        function openAddModal() {
+            modalTitle.textContent = 'Add New Product';
+            productForm.reset();
+            document.getElementById('productId').value = '';
+            productModal.style.display = 'block';
+        }
+
+        function openEditModal(productId) {
+            modalTitle.textContent = 'Edit Product';
+            const product = currentProducts.find(p => p._id === productId);
+            if (product) {
+                document.getElementById('productId').value = product._id;
+                document.getElementById('name').value = product.name;
+                document.getElementById('description').value = product.description;
+                document.getElementById('price').value = product.price;
+                document.getElementById('category').value = product.category;
+                document.getElementById('inStock').value = product.inStock;
+                productModal.style.display = 'block';
+            }
+        }
+
+        function closeModal() {
+            productModal.style.display = 'none';
+        }
+
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            const productId = document.getElementById('productId').value;
+            const productData = {
+                name: document.getElementById('name').value,
+                description: document.getElementById('description').value,
+                price: parseFloat(document.getElementById('price').value),
+                category: document.getElementById('category').value,
+                inStock: document.getElementById('inStock').value === 'true'
+            };
+
+            try {
+                const url = productId ? `${API_URL}/${productId}` : API_URL;
+                const method = productId ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': localStorage.getItem('apiKey') || ''
+                    },
+                    body: JSON.stringify(productData)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to save product');
+                }
+
+                showAlert(`Product ${productId ? 'updated' : 'added'} successfully`);
+                closeModal();
+                fetchProducts();
+            } catch (error) {
+                showAlert(error.message, 'error');
+            }
+        }
+
+        async function deleteProduct(productId) {
+            if (!confirm('Are you sure you want to delete this product?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/${productId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'x-api-key': localStorage.getItem('apiKey') || ''
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to delete product');
+                }
+
+                showAlert('Product deleted successfully');
+                fetchProducts();
+            } catch (error) {
+                showAlert(error.message, 'error');
+            }
+        }
+
+        // Initialize
         fetchProducts();
     </script>
 </body>
