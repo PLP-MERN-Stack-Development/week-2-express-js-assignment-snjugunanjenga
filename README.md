@@ -72,7 +72,7 @@ Status: 200 OK
   ...
 ]
 ```
-![GET all products screenshot](screenshots/get-all-products.png)
+![GET all products screenshot](screenshots/GET-api-products.PNG)
 
 ---
 
@@ -93,7 +93,7 @@ Status: 200 OK
   }
 ]
 ```
-![GET products by category screenshot](screenshots/get-products-category.png)
+![GET products by category screenshot](screenshots/api-products-category=electronics..PNG)
 
 ---
 
@@ -114,7 +114,7 @@ Status: 200 OK
   }
 ]
 ```
-![GET products by search screenshot](screenshots/get-products-search.png)
+![GET products by search screenshot](screenshots/api-products-search=laptop.PNG)
 
 ---
 
@@ -131,7 +131,7 @@ Status: 200 OK
   { "id": "2", "name": "Phone", ... }
 ]
 ```
-![GET products paginated screenshot](screenshots/get-products-paginated.png)
+![GET products paginated screenshot](screenshots/api-products-page=1&limit=2.PNG)
 
 ---
 
@@ -150,7 +150,7 @@ Status: 200 OK
   "price": 1200
 }
 ```
-![GET product by ID screenshot](screenshots/get-product-by-id.png)
+![GET product by ID screenshot](screenshots/GET-api-products.PNG)
 
 ---
 
@@ -166,7 +166,7 @@ Status: 404 Not Found
   "error": "Product not found"
 }
 ```
-![GET product not found screenshot](screenshots/get-product-notfound.png)
+![GET product not found screenshot](screenshots/GET-api-products.PNG)
 
 ---
 
@@ -193,7 +193,7 @@ Status: 201 Created
   "price": 500
 }
 ```
-![POST create product screenshot](screenshots/post-create-product.png)
+![POST create product screenshot](screenshots/GET-api-products.PNG)
 
 ---
 
